@@ -20,20 +20,25 @@ contains
   subroutine timer_sta(num, str)
     integer, intent(in) :: num
     character(*), intent(in) :: str
+    !$omp master
     start_time(num) = MPI_WTIME()
     num_calls(num) = num_calls(num) + 1
     if(myrank == 0) then
       write(comment(num), *) str
     endif
+    !$omp end master
   end subroutine timer_sta
 
   subroutine timer_end(num)
     integer, intent(in) :: num
+    !$omp master
     end_time(num) = MPI_WTIME()
     elapse(num) = elapse(num) + (end_time(num) - start_time(num))
+    !$omp end master
   end subroutine timer_end
 
   subroutine timer_summary
+    !$omp master
     call MPI_COMM_RANK(MPI_COMM_WORLD, myrank, ierr)
     call MPI_COMM_SIZE(MPI_COMM_WORLD, nprocs, ierr)
 
@@ -61,12 +66,13 @@ contains
     end do
 
     close(iunit)
-
+    !$omp end master
   end subroutine timer_summary
 
   subroutine timer_result
     character(100) :: fname
 
+    !$omp master
     call MPI_COMM_RANK(MPI_COMM_WORLD, myrank, ierr)
 
     write(fname,'(''timer.out.'',I6.6)') myrank
@@ -80,7 +86,7 @@ contains
     enddo
 
     close(iunit)
-
+    !$omp end master
   end subroutine timer_result
 
 end module mpi_timer
