@@ -5,7 +5,7 @@ module mpi_timer
 
   integer, private :: i, j, myrank, nprocs, ierr
   integer, private, parameter :: max_rec_size = 5000
-  integer, private, parameter :: max_num_threads = 100
+  integer, private, parameter :: max_num_threads = 8
   integer, private, parameter :: iunit = 97
   real(8), private, save :: start_time(1:max_num_threads,1:max_rec_size) = 0.0_8
   real(8), private, save :: end_time(1:max_num_threads,1:max_rec_size) = 0.0_8
@@ -109,13 +109,15 @@ contains
 
     do i = 1, max_rec_size
       if(elapse(1,i) /= 0.0_8) then
-        write(iunit,'(" ",i4,1x,a,1x,i8,1x)', advance='no') i, comment(i), num_calls(i)
+        write(iunit,'(i4,",",a,",",i8,",")', advance='no') i, comment(i), num_calls(i)
         do j = 1, max_num_threads
           if(elapse(j,i) /= 0.0_8) then
-            write(iunit,'(" ",f13.3,1x)', advance='no') elapse(j,i)
-          else
+            write(iunit,'(f13.3)', advance='no') elapse(j,i)
+          endif
+          if(j == max_num_threads) then
             write(iunit, '()')
-            exit
+          else
+            write(iunit,'(",")', advance='no')
           endif
         enddo
       endif
