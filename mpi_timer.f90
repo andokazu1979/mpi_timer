@@ -65,31 +65,19 @@ contains
              write(iunit, '(i4,1x,a,1x,i8,1x)') i, comment(i), all_num_calls
              write(iunit, '(a,1x)', advance='no') 'min = '
              do j = 1, max_num_threads
-               if(min_elapse(j) /= 0.0_8) then
-                 write(iunit, '(f13.3,1x)', advance='no') min_elapse(j)
-               else
-                 write(iunit, '()')
-                 exit
-               endif
+               write(iunit, '(f13.3,1x)', advance='no') min_elapse(j)
              enddo
+             write(iunit, '()')
              write(iunit, '(a,1x)', advance='no') 'max = '
              do j = 1, max_num_threads
-               if(max_elapse(j) /= 0.0_8) then
-                 write(iunit, '(f13.3,1x)', advance='no') max_elapse(j)
-               else
-                 write(iunit, '()')
-                 exit
-               endif
+               write(iunit, '(f13.3,1x)', advance='no') max_elapse(j)
              enddo
+             write(iunit, '()')
              write(iunit, '(a,1x)', advance='no') 'ave = '
              do j = 1, max_num_threads
-               if(min_elapse(j) /= 0.0_8) then
-                 write(iunit, '(f13.3,1x)', advance='no') sum_elapse(j) / nprocs
-               else
-                 write(iunit, '()')
-                 exit
-               endif
+               write(iunit, '(f13.3,1x)', advance='no') sum_elapse(j) / nprocs
              enddo
+             write(iunit, '()')
           end if
        end if
     end do
@@ -111,9 +99,7 @@ contains
       if(comment(i) /= '') then
         write(iunit,'(i4,",",a,",",i8,",")', advance='no') i, comment(i), num_calls(i)
         do j = 1, max_num_threads
-          if(elapse(j,i) /= 0.0_8) then
-            write(iunit,'(f13.3)', advance='no') elapse(j,i)
-          endif
+          write(iunit,'(f13.3)', advance='no') elapse(j,i)
           if(j == max_num_threads) then
             write(iunit, '()')
           else
