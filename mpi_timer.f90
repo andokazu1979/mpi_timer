@@ -13,7 +13,7 @@ module mpi_timer
   real(8), private, save :: min_elapse(1:max_num_threads) = 0.0_8
   real(8), private, save :: max_elapse(1:max_num_threads) = 0.0_8
   real(8), private, save :: sum_elapse(1:max_num_threads) = 0.0_8
-  character(80), private, save :: comment(1:max_rec_size)
+  character(80), private, save :: comment(1:max_rec_size) = ''
   integer(8), private, save :: num_calls(1:max_rec_size) = 0
   integer(8), private, save :: all_num_calls = 0
 
@@ -61,7 +61,7 @@ contains
             MPI_SUM, 0, MPI_COMM_WORLD, ierr)
 
        if(myrank == 0) then
-          if(max_elapse(1) /= 0.0_8 .and. min_elapse(1) /= 0.0_8) then
+          if(comment(i) /= '') then
              write(iunit, '(i4,1x,a,1x,i8,1x)') i, comment(i), all_num_calls
              write(iunit, '(a,1x)', advance='no') 'min = '
              do j = 1, max_num_threads
@@ -108,7 +108,7 @@ contains
     open(iunit, file=fname)
 
     do i = 1, max_rec_size
-      if(elapse(1,i) /= 0.0_8) then
+      if(comment(i) /= '') then
         write(iunit,'(i4,",",a,",",i8,",")', advance='no') i, comment(i), num_calls(i)
         do j = 1, max_num_threads
           if(elapse(j,i) /= 0.0_8) then
