@@ -7,9 +7,9 @@ module mpi_timer
   integer, private, parameter :: max_rec_size = 5000
   integer, private, parameter :: max_num_threads = 8
   integer, private, parameter :: iunit = 97
-  real(8), private, save :: start_time(1:max_num_threads,1:max_rec_size) = 0.0_8
-  real(8), private, save :: end_time(1:max_num_threads,1:max_rec_size) = 0.0_8
-  real(8), private, save :: elapse(1:max_num_threads,1:max_rec_size) = 0.0_8
+  real(8), private, save :: start_time(1:max_rec_size,1:max_num_threads) = 0.0_8
+  real(8), private, save :: end_time(1:max_rec_size,1:max_num_threads) = 0.0_8
+  real(8), private, save :: elapse(1:max_rec_size,1:max_num_threads) = 0.0_8
   real(8), private, save :: min_elapse(1:max_num_threads) = 0.0_8
   real(8), private, save :: max_elapse(1:max_num_threads) = 0.0_8
   real(8), private, save :: sum_elapse(1:max_num_threads) = 0.0_8
@@ -25,7 +25,7 @@ contains
     integer id
     id = 0
     !$ id = omp_get_thread_num()
-    start_time(id+1,num) = MPI_WTIME()
+    start_time(num,id+1) = MPI_WTIME()
     !$omp master
     num_calls(num) = num_calls(num) + 1
     if(myrank == 0) then
@@ -39,8 +39,8 @@ contains
     integer id
     id = 0
     !$ id = omp_get_thread_num()
-    end_time(id+1,num) = MPI_WTIME()
-    elapse(id+1,num) = elapse(id+1,num) + (end_time(id+1,num) - start_time(id+1,num))
+    end_time(num,id+1) = MPI_WTIME()
+    elapse(num,id+1) = elapse(num,id+1) + (end_time(num,id+1) - start_time(num,id+1))
   end subroutine timer_end
 
   subroutine timer_summary
@@ -51,11 +51,11 @@ contains
     open(iunit, file='timer.out.summary')
 
     do i = 1, max_rec_size
-       call MPI_REDUCE(elapse(1,i), max_elapse, max_num_threads, MPI_DOUBLE_PRECISION, &
+       call MPI_REDUCE(elapse(i,1), max_elapse, max_num_threads, MPI_DOUBLE_PRECISION, &
             MPI_MAX, 0, MPI_COMM_WORLD, ierr)
-       call MPI_REDUCE(elapse(1,i), min_elapse, max_num_threads, MPI_DOUBLE_PRECISION, &
+       call MPI_REDUCE(elapse(i,1), min_elapse, max_num_threads, MPI_DOUBLE_PRECISION, &
             MPI_MIN, 0, MPI_COMM_WORLD, ierr)
-       call MPI_REDUCE(elapse(1,i), sum_elapse, max_num_threads, MPI_DOUBLE_PRECISION, &
+       call MPI_REDUCE(elapse(i,1), sum_elapse, max_num_threads, MPI_DOUBLE_PRECISION, &
             MPI_SUM, 0, MPI_COMM_WORLD, ierr)
        call MPI_REDUCE(num_calls(i), all_num_calls, 1, MPI_INTEGER8, &
             MPI_SUM, 0, MPI_COMM_WORLD, ierr)
@@ -99,7 +99,7 @@ contains
       if(comment(i) /= '') then
         write(iunit,'(i4,",",a,",",i8,",")', advance='no') i, comment(i), num_calls(i)
         do j = 1, max_num_threads
-          write(iunit,'(f13.3)', advance='no') elapse(j,i)
+          write(iunit,'(f13.3)', advance='no') elapse(i,j)
           if(j == max_num_threads) then
             write(iunit, '()')
           else
